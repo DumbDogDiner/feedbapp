@@ -1,9 +1,12 @@
 FROM node:16-alpine
-
-ENV NODE_ENV=production
-
+# set work
 WORKDIR /app
-COPY ["package.json", "./"]
-RUN npm install --production
+# copy package info and install deps
+COPY package.json .
+RUN yarn
+# copy source code
 COPY . .
-CMD ["npm", "run", "start"]
+# set environment - define here to prevent yarn from installing prod
+ENV NODE_ENV=production
+# run 
+CMD ["yarn", "start"]
