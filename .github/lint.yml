@@ -1,0 +1,17 @@
+name: build
+
+on: push
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            # set up docker
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: "16"
+            # install deps
+            - run: yarn install
+            # run linter
+            - run: yarn lint
