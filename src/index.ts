@@ -1,15 +1,7 @@
-import {
-	Channel,
-	Client,
-	DMChannel,
-	Guild,
-	GuildMember,
-	Message,
-	TextChannel,
-} from "discord.js";
+import Discord, { Client, DMChannel, Message, TextChannel } from "discord.js";
+import dotenv from "dotenv";
 
-const Discord = require("discord.js");
-require("dotenv").config();
+dotenv.config();
 
 // Login to Discord
 const client: Client = new Discord.Client();
@@ -21,49 +13,51 @@ client.on("ready", () => {
 });
 
 // Await messages
-client.on("message", (message: Message) => {
-	checkMessage(message, process.env.CHECK_GUILD)
-		.then((isMember: boolean) => {
-			if (message.channel.type != "dm") return; // DMs only please!
+client.on("message", async (message: Message) => {
+	let isMember: boolean;
+	try {
+		isMember = await checkMessage(message, process.env.CHECK_GUILD!);
+	} catch (_) {
+		return;
+	}
 
-			// who are u
-			if (!isMember) {
-				console.log("Feedback received - User may not send feedback!");
-				message.author
-					.createDM()
-					.then((dmChannel: DMChannel) => {
-						dmChannel
-							.send("You may not send feedback!")
-							.catch((err) => {
-								// ignore
-							});
-					})
-					.catch((err) => {
-						// ignore
-					});
-				return;
-			}
+	if (message.channel.type != "dm") return; // DMs only please!
 
-			let feedbackChannel: Channel = client.guilds.cache
-				.get(process.env.CHECK_GUILD)
-				.channels.cache.get(process.env.FEEDBACK_CHANNEL);
+	// who are u
+	if (!isMember) {
+		console.log("Feedback received - User may not send feedback!");
+		message.author
+			.createDM()
+			.then((dmChannel: DMChannel) => {
+				// ignore
+				dmChannel.send("You may not send feedback!").catch(console.error);
+			})
+			// ignore
+			.catch(console.error);
+		return;
+	}
+	// fetch the feedback guild from cache
+	const feedbackGuild = client.guilds.cache.get(process.env.CHECK_GUILD!);
+	if (!feedbackGuild) {
+		throw new Error("Failed to access feedback guild");
+	}
+	// fetch feedback channel from cache
+	const feedbackChannel = feedbackGuild.channels.cache.get(process.env.FEEDBACK_CHANNEL!);
+	// check if feedback channel exists
+	if (!feedbackChannel) {
+		throw new Error("Failed to access feedback channel");
+	}
+	// check if is text channel
+	if (!feedbackChannel.isText()) {
+		return console.log(`Channel ${feedbackChannel.id} is not a text channel!`);
+	}
 
-			if (feedbackChannel.isText) {
-				console.log(
-					`Feedback received - Sending message to channel #${
-						(feedbackChannel as TextChannel).name
-					} (${feedbackChannel.id})`
-				);
-				(feedbackChannel as TextChannel).send(message.content);
-			} else {
-				console.log(
-					`Channel ${feedbackChannel.id} is not a text channel!`
-				);
-			}
-		})
-		.catch((error: Error) => {
-			console.log("There was an error! uwu");
-		});
+	console.log(
+		`Feedback received - Sending message to channel #${(feedbackChannel as TextChannel).name} (${
+			feedbackChannel.id
+		})`
+	);
+	(feedbackChannel as TextChannel).send(message.content);
 });
 
 /// END DISCORD SETUP ///
@@ -72,19 +66,20 @@ client.on("message", (message: Message) => {
  * Check if a message is from a user that is in a certain guild
  * @param {*} message to log
  */
-async function checkMessage(
-	message: Message,
-	guildId: string
-): Promise<boolean> {
-	let guild: Guild = client.guilds.cache.get(guildId);
+const checkMessage = async (message: Message, guildId: string) => {
+	const guild = client.guilds.cache.get(guildId);
+	// check if guild is undefined
+	if (!guild) {
+		throw new Error("Failed to access check guild");
+	}
 	let status: boolean;
-	await guild.members
-		.fetch(message.author.id)
-		.then((member: GuildMember) => {
-			status = message.author.id != client.user.id && true;
-		})
-		.catch((err) => {
-			status = false;
-		});
+	try {
+		// what is this doing
+		// const member = await guild.members.fetch(message.author.id);
+		status = message.author.id != client.user!.id && true;
+	} catch (err) {
+		status = false;
+	}
+
 	return status;
-}
+};

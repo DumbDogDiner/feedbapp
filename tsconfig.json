@@ -2,11 +2,11 @@
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "CommonJS",
-
 		"strict": true,
-
 		"skipDefaultLibCheck": true,
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true
 	},
 	"exclude": ["node_modules"],
 	"include": ["src"]
