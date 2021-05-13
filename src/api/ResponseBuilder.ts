@@ -4,7 +4,7 @@ const warnColor = '#e3bb39';
 const feedbapColor = '#4b94e3';
 const successColor = '#33bd51';
 
-export const sendWarn = (response: String, message: Message) => {
+export const sendWarn = (response: string, message: Message) => {
     const embed = new Discord.MessageEmbed()
         .setColor(warnColor)
         .setDescription(`⚠ ${response}`);
@@ -13,7 +13,7 @@ export const sendWarn = (response: String, message: Message) => {
 } 
 
 
-export const sendSuccess = (response: String, message: Message) => {
+export const sendSuccess = (response: string, message: Message) => {
     const embed = new Discord.MessageEmbed()
         .setColor(successColor)
         .setDescription(`✅ ${response}`);

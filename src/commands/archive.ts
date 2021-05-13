@@ -5,7 +5,7 @@ import * as ResponseBuilder from "../api/ResponseBuilder";
 
 export const run = async (client: Client, msg: Message, args: string[]) => {
     const guild: Guild = client.guilds.cache.get(process.env.CHECK_GUILD!)!;
-    var channel: TextChannel;
+    let channel: TextChannel;
 
     if(args.length > 0) channel = guild.channels.cache.get(args[0]) as TextChannel;
     else channel = msg.channel as TextChannel;
@@ -26,7 +26,7 @@ export const run = async (client: Client, msg: Message, args: string[]) => {
     }
 
     const allMessages: Message[] = [];
-    var lastId = channel.id;
+    let lastId = channel.id;
 
     while (true) {
         const fetched = await channel.messages.fetch({after: lastId, limit: 100});
@@ -37,9 +37,9 @@ export const run = async (client: Client, msg: Message, args: string[]) => {
         if (fetched.size !== 100) break;
     }
     
-    var content: string[] = [];
+    const content: string[] = [];
     allMessages.forEach((value: Message) => {
-        var archivedMsg = `${value.author.tag} - ${new Date(value.createdTimestamp).toUTCString()}\n${value.content ? value.content : "[Empty Message]"}`;
+        let archivedMsg = `${value.author.tag} - ${new Date(value.createdTimestamp).toUTCString()}\n${value.content ? value.content : "[Empty Message]"}`;
 
         if(value.attachments) {
             value.attachments.forEach((attachment: MessageAttachment) => {
