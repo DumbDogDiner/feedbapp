@@ -54,11 +54,11 @@ export const run = async (client: Client, msg: Message, args: string[]) => {
 		content.push(archivedMsg);
 	});
 
-	if (await checkFolder("./data")) {
+	if (!await checkFolder("./data")) {
 		await mkdir("./data");
 	}
 
-	if (await checkFolder("./data/channel_logs")) {
+	if (!await checkFolder("./data/channel_logs")) {
 		await mkdir("./data/channel_logs");
 	}
 
