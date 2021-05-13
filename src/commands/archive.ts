@@ -1,5 +1,6 @@
 import { Client, Collection, Guild, Message, MessageAttachment, TextChannel } from "discord.js";
-import * as fs from "fs";
+import { access, writeFile, mkdir } from "fs/promises";
+import { constants } from "fs";
 
 import * as ResponseBuilder from "../api/ResponseBuilder";
 
@@ -53,15 +54,24 @@ export const run = async (client: Client, msg: Message, args: string[]) => {
 		content.push(archivedMsg);
 	});
 
-	if (!fs.existsSync("./data")) {
-		fs.mkdirSync("./data");
+	if (await checkFolder("./data")) {
+		await mkdir("./data");
 	}
 
-	if (!fs.existsSync("./data/channel_logs")) {
-		fs.mkdirSync("./data/channel_logs");
+	if (await checkFolder("./data/channel_logs")) {
+		await mkdir("./data/channel_logs");
 	}
 
-	fs.writeFileSync(`./data/channel_logs/${channel.id}.txt`, content.join("\n \n"));
+	await writeFile(`./data/channel_logs/${channel.id}.txt`, content.join("\n \n"));
 
 	ResponseBuilder.archiveNotice(msg, channel);
 };
+
+async function checkFolder(relPath: string): Promise<boolean> {
+	try {
+		await access(relPath, constants.F_OK);
+		return true;
+	} catch {
+		return false;
+	}
+}
