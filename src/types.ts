@@ -1,4 +1,4 @@
 export enum MessageType {
-    PRIVATE = "dm",
-    SERVER = "text"
-};
+	PRIVATE = "dm",
+	SERVER = "text",
+}

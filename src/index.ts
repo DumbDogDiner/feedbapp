@@ -17,22 +17,20 @@ client.on("ready", () => {
 
 // Await messages
 client.on("message", async (message: Message) => {
-	if(message.author.bot) return;
+	if (message.author.bot) return;
 
-	if(!checkMessage(message, process.env.CHECK_GUILD!)) {
+	if (!checkMessage(message, process.env.CHECK_GUILD!)) {
 		console.log(`Received message from non-guild member ${message.author.id} - Skipping...`);
 
-		if(message.channel.type == MessageType.PRIVATE) {
-			ResponseBuilder.sendWarn('You may not interact with this bot!', message);
+		if (message.channel.type == MessageType.PRIVATE) {
+			ResponseBuilder.sendWarn("You may not interact with this bot!", message);
 		}
 
 		return;
 	}
 
-	if(message.channel.type == MessageType.PRIVATE)
-		ResponseBuilder.logFeedback(client, message);
+	if (message.channel.type == MessageType.PRIVATE) ResponseBuilder.logFeedback(client, message);
 	else processCommand(message);
-
 });
 
 /// END DISCORD SETUP ///
@@ -60,18 +58,16 @@ const checkMessage = async (message: Message, guildId: string) => {
 };
 
 function processCommand(msg: Discord.Message) {
-	if(msg.content.startsWith(process.env.CMD_PREFIX!)) {
+	if (msg.content.startsWith(process.env.CMD_PREFIX!)) {
 		const args: String[] = msg.content.slice(process.env.CMD_PREFIX!.length, msg.content.length).trim().split(/ +/g);
 		const command = args.shift()!.toLowerCase();
-	  
+
 		try {
 			delete require.cache[require.resolve(`./commands/${command}.ts`)];
 			let commandFile = require(`./commands/${command}.ts`);
 			commandFile.run(client, msg, args);
-		
 		} catch (e) {
 			console.error(`\x1b[31mOh no! Something went wrong! ${e.stack}\x1b[0m`);
 		}
 	}
 }
-
