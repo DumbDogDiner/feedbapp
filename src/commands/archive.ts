@@ -11,17 +11,17 @@ export const run = async (client: Client, msg: Message, args: string[]) => {
 	else channel = msg.channel as TextChannel;
 
 	if (!channel || !guild) {
-		ResponseBuilder.sendWarn("Could not fetch Channel.", msg);
+		ResponseBuilder.sendWarn(msg.channel as TextChannel, "Could not fetch Channel.");
 		return;
 	}
 
 	if (!guild.me?.hasPermission("MANAGE_CHANNELS")) {
-		ResponseBuilder.sendWarn("Bot does not have Permission to manage Channels!", msg);
+		ResponseBuilder.sendWarn(msg.channel as TextChannel, "Bot does not have Permission to manage Channels!");
 		return;
 	}
 
 	if (!msg.member?.hasPermission("MANAGE_CHANNELS")) {
-		ResponseBuilder.sendWarn("You don't have the required Permissions to run this command!", msg);
+		ResponseBuilder.sendWarn(msg.channel as TextChannel, "You don't have the required Permissions to run this command!");
 		return;
 	}
 
@@ -63,5 +63,5 @@ export const run = async (client: Client, msg: Message, args: string[]) => {
 
 	fs.writeFileSync(`./data/channel_logs/${channel.id}.txt`, content.join("\n \n"));
 
-	ResponseBuilder.archiveNotice(msg, channel, "./data/channel_logs/${channel.id}.txt");
+	ResponseBuilder.archiveNotice(msg, channel);
 };
