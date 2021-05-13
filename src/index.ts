@@ -1,8 +1,8 @@
 import Discord, { Client, DMChannel, Message, TextChannel } from "discord.js";
-import { MessageType } from "./types";
 import dotenv from "dotenv";
 
 import * as ResponseBuilder from "./api/ResponseBuilder";
+import { MessageType } from "./types";
 
 dotenv.config();
 
@@ -57,17 +57,17 @@ const checkMessage = async (message: Message, guildId: string) => {
 	return status;
 };
 
-function processCommand(msg: Discord.Message) {
+const processCommand = async (msg: Discord.Message) => {
 	if (msg.content.startsWith(process.env.CMD_PREFIX!)) {
-		const args: String[] = msg.content.slice(process.env.CMD_PREFIX!.length, msg.content.length).trim().split(/ +/g);
+		const args: string[] = msg.content.slice(process.env.CMD_PREFIX!.length, msg.content.length).trim().split(/ +/g);
 		const command = args.shift()!.toLowerCase();
 
 		try {
 			delete require.cache[require.resolve(`./commands/${command}.ts`)];
-			let commandFile = require(`./commands/${command}.ts`);
+			const commandFile = await import(`./commands/${command}.ts`);
 			commandFile.run(client, msg, args);
 		} catch (e) {
 			console.error(`\x1b[31mOh no! Something went wrong! ${e.stack}\x1b[0m`);
 		}
 	}
-}
+};

@@ -9,7 +9,6 @@ const SUCCESS_COLOR = "#33bd51";
  */
 export const sendWarn = (response: string, message: Message) => {
 	const embed = new Discord.MessageEmbed().setColor(WARN_COLOR).setDescription(`⚠ ${response}`);
-
 	message.channel.send(embed);
 };
 
@@ -18,7 +17,6 @@ export const sendWarn = (response: string, message: Message) => {
  */
 export const sendSuccess = (response: string, message: Message) => {
 	const embed = new Discord.MessageEmbed().setColor(SUCCESS_COLOR).setDescription(`✅ ${response}`);
-
 	message.channel.send(embed);
 };
 

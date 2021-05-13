@@ -26,15 +26,16 @@ export const run = async (client: Client, msg: Message, args: string[]) => {
 	}
 
 	const allMessages: Message[] = [];
+	let fetched = new Collection<string, Message>();
+
 	let lastId = channel.id;
 
-	while (true) {
-		const fetched = await channel.messages.fetch({ after: lastId, limit: 100 });
+	while (fetched.size < 100) {
+		fetched = await channel.messages.fetch({ after: lastId, limit: 100 });
 		const sorted = [...fetched.sort((a, b) => a.createdTimestamp - b.createdTimestamp).values()];
 		lastId = sorted[sorted.length - 1].id;
 
 		allMessages.push(...sorted);
-		if (fetched.size !== 100) break;
 	}
 
 	const content: string[] = [];
