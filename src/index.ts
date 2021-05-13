@@ -1,6 +1,9 @@
 import Discord, { Client, DMChannel, Message, TextChannel } from "discord.js";
 import dotenv from "dotenv";
 
+import * as ResponseBuilder from "./api/ResponseBuilder";
+import { MessageType } from "./types";
+
 dotenv.config();
 
 // Login to Discord
@@ -14,50 +17,20 @@ client.on("ready", () => {
 
 // Await messages
 client.on("message", async (message: Message) => {
-	let isMember: boolean;
-	try {
-		isMember = await checkMessage(message, process.env.CHECK_GUILD!);
-	} catch (_) {
+	if (message.author.bot) return;
+
+	if (!checkMessage(message, process.env.CHECK_GUILD!)) {
+		console.log(`Received message from non-guild member ${message.author.id} - Skipping...`);
+
+		if (message.channel.type == MessageType.PRIVATE) {
+			ResponseBuilder.sendWarn("You may not interact with this bot!", message);
+		}
+
 		return;
 	}
 
-	if (message.channel.type != "dm") return; // DMs only please!
-
-	// who are u
-	if (!isMember) {
-		console.log("Feedback received - User may not send feedback!");
-		message.author
-			.createDM()
-			.then((dmChannel: DMChannel) => {
-				// ignore
-				dmChannel.send("You may not send feedback!").catch(console.error);
-			})
-			// ignore
-			.catch(console.error);
-		return;
-	}
-	// fetch the feedback guild from cache
-	const feedbackGuild = client.guilds.cache.get(process.env.CHECK_GUILD!);
-	if (!feedbackGuild) {
-		throw new Error("Failed to access feedback guild");
-	}
-	// fetch feedback channel from cache
-	const feedbackChannel = feedbackGuild.channels.cache.get(process.env.FEEDBACK_CHANNEL!);
-	// check if feedback channel exists
-	if (!feedbackChannel) {
-		throw new Error("Failed to access feedback channel");
-	}
-	// check if is text channel
-	if (!feedbackChannel.isText()) {
-		return console.log(`Channel ${feedbackChannel.id} is not a text channel!`);
-	}
-
-	console.log(
-		`Feedback received - Sending message to channel #${(feedbackChannel as TextChannel).name} (${
-			feedbackChannel.id
-		})`
-	);
-	(feedbackChannel as TextChannel).send(message.content);
+	if (message.channel.type == MessageType.PRIVATE) ResponseBuilder.logFeedback(client, message);
+	else processCommand(message);
 });
 
 /// END DISCORD SETUP ///
@@ -82,4 +55,19 @@ const checkMessage = async (message: Message, guildId: string) => {
 	}
 
 	return status;
+};
+
+const processCommand = async (msg: Discord.Message) => {
+	if (msg.content.startsWith(process.env.CMD_PREFIX!)) {
+		const args: string[] = msg.content.slice(process.env.CMD_PREFIX!.length, msg.content.length).trim().split(/ +/g);
+		const command = args.shift()!.toLowerCase();
+
+		try {
+			delete require.cache[require.resolve(`./commands/${command}.ts`)];
+			const commandFile = await import(`./commands/${command}.ts`);
+			commandFile.run(client, msg, args);
+		} catch (e) {
+			console.error(`\x1b[31mOh no! Something went wrong! ${e.stack}\x1b[0m`);
+		}
+	}
 };
